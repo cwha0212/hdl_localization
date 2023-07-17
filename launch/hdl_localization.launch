@@ -2,17 +2,17 @@
 <launch>
   <!-- arguments -->
   <arg name="nodelet_manager" default="velodyne_nodelet_manager" />
-  <arg name="points_topic" default="/velodyne_points" />
+  <arg name="points_topic" default="/ouster/points" />
   <!-- input clouds are transformed in odom_child_frame, and then localization is performed in that frame -->
   <!-- this is useful to match the LIDAR and IMU coodinate systems -->
-  <arg name="odom_child_frame_id" default="velodyne" />
+  <arg name="odom_child_frame_id" default="os_sensor" />
 
   <!-- optional arguments -->
-  <arg name="use_imu" default="false" />
+  <arg name="use_imu" default="true" />
   <arg name="invert_imu_acc" default="false" />
   <arg name="invert_imu_gyro" default="false" />
   <arg name="use_global_localization" default="true" />
-  <arg name="imu_topic" default="/imu/data" />
+  <arg name="imu_topic" default="/ouster/imu" />
   <arg name="enable_robot_odometry_prediction" value="false" />
   <arg name="robot_odom_frame_id" value="odom" />
   <arg name="plot_estimation_errors" value="false" />
@@ -65,6 +65,15 @@
 
       <param name="use_global_localization" value="$(arg use_global_localization)" />
     </node>
-
+    <node pkg="util_pkg" type="pub_marker.py" name="parking_marker" output="screen"></node>
+    <node pkg="util_pkg" type="pub_points.py" name="pub_points" output="screen"></node>
+    <node pkg="util_pkg" type="parking_detection.py" name="parking_detection" output="screen"></node>
+    <node pkg="adaptive_clustering" name="adaptive_clustering_legal" type="adaptive_clustering_legal">
+      <param name="print_fps" value="true"/>
+    </node>
+    <node pkg="adaptive_clustering" name="adaptive_clustering_illegal" type="adaptive_clustering_illegal">
+      <param name="print_fps" value="true"/>
+    </node>
+    <node type="rviz" name="rviz" pkg="rviz" args=" -d $(find hdl_localization)/rviz/hdl_localization.rviz"></node>
     <node pkg="hdl_localization" type="plot_status.py" name="plot_estimation_errors" if="$(arg plot_estimation_errors)" />
 </launch>
